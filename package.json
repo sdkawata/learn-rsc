@@ -1,0 +1,23 @@
+{
+  "name": "learn-rsc",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon -- --experimental-loader ./node-jsx-loader.js ./server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.22.5",
+    "@babel/plugin-transform-react-jsx": "^7.22.5",
+    "escape-html": "^1.0.3",
+    "nodemon": "^2.0.22",
+    "react": "^18.2.0",
+    "sanitize-filename": "^1.6.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.3.3"
+  }
+}
