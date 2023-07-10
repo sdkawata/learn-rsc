@@ -1,37 +1,32 @@
 import { createServer } from "http";
-import { readFile } from "fs/promises";
+import { readFile, readdir } from "fs/promises";
 import escapeHtml from "escape-html";
-
-const App = ({author = "aaaa", postContent}) => {
-  return (<html>
-    <head>
-      <title>My blog</title>
-    </head>
-    <body>
-      <nav>
-        <a href="/">Home</a>
-        <hr />
-      </nav>
-      <article>{postContent}</article>
-      <footer>
-        <hr />
-        <p>
-          <i>
-            (c) {author} {new Date().getFullYear()}
-          </i>
-        </p>
-      </footer>
-    </body>
-  </html>);
-}
+import {PageList} from "./components/PageList.js"
+import {Page} from "./components/Page.js"
 
 createServer(async (req, res) => {
-  const author = "Jae Doe";
-  const postContent = await readFile("./posts/hello-world.txt", "utf8");
-  sendHTML(
-    res,
-    <App author={author} postContent={postContent}/>
-  );
+  const postFiles = await readdir("./posts");
+  const postSlugs = postFiles.map(file => file.slice(0, file.lastIndexOf(".")))
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  if (url.pathname === "/") {
+    sendHTML(
+      res,
+      <PageList postSlugs={postSlugs}/>
+    );
+  } else {
+    try {
+      const slug = url.pathname.slice(1)
+      const content = await readFile(`./posts/${slug}.txt`, "utf8")
+      sendHTML(
+        res,
+        <Page content={content}/>
+      )
+    } catch(e) {
+      console.log(e)
+      res.statusCode = 500
+      res.end("err")
+    }
+  }
 }).listen(8080);
 
 function sendHTML(res, jsx) {
@@ -41,7 +36,7 @@ function sendHTML(res, jsx) {
 }
 
 function renderJSXToHTML(jsx) {
-  console.log(jsx);
+  // console.log(jsx);
   if (typeof jsx === "string" || typeof jsx === "number") {
     return escapeHtml(jsx);
   } else if (jsx == null || typeof jsx === "boolean") {
