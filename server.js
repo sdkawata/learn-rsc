@@ -2,31 +2,35 @@ import { createServer } from "http";
 import { readFile } from "fs/promises";
 import escapeHtml from "escape-html";
 
+const App = ({author = "aaaa", postContent}) => {
+  return (<html>
+    <head>
+      <title>My blog</title>
+    </head>
+    <body>
+      <nav>
+        <a href="/">Home</a>
+        <hr />
+      </nav>
+      <article>{postContent}</article>
+      <footer>
+        <hr />
+        <p>
+          <i>
+            (c) {author} {new Date().getFullYear()}
+          </i>
+        </p>
+      </footer>
+    </body>
+  </html>);
+}
+
 createServer(async (req, res) => {
   const author = "Jae Doe";
   const postContent = await readFile("./posts/hello-world.txt", "utf8");
   sendHTML(
     res,
-    <html>
-      <head>
-        <title>My blog</title>
-      </head>
-      <body>
-        <nav>
-          <a href="/">Home</a>
-          <hr />
-        </nav>
-        <article>{postContent}</article>
-        <footer>
-          <hr />
-          <p>
-            <i>
-              (c) {author} {new Date().getFullYear()}
-            </i>
-          </p>
-        </footer>
-      </body>
-    </html>
+    <App author={author} postContent={postContent}/>
   );
 }).listen(8080);
 
@@ -46,19 +50,23 @@ function renderJSXToHTML(jsx) {
     return jsx.map((child) => renderJSXToHTML(child)).join("");
   } else if (typeof jsx === "object") {
     if (jsx.$$typeof === Symbol.for("react.element")) {
-      let html = "<" + jsx.type;
-      for (const propName in jsx.props) {
-        if (jsx.props.hasOwnProperty(propName) && propName !== "children") {
-          html += " ";
-          html += propName;
-          html += "=";
-          html += escapeHtml(jsx.props[propName]);
+      if (typeof jsx.type === "function") {
+        return renderJSXToHTML(jsx.type(jsx.props))
+      } else {
+        let html = "<" + jsx.type;
+        for (const propName in jsx.props) {
+          if (jsx.props.hasOwnProperty(propName) && propName !== "children") {
+            html += " ";
+            html += propName;
+            html += "=";
+            html += escapeHtml(jsx.props[propName]);
+          }
         }
+        html += ">";
+        html += renderJSXToHTML(jsx.props.children);
+        html += "</" + jsx.type + ">";
+        return html;
       }
-      html += ">";
-      html += renderJSXToHTML(jsx.props.children);
-      html += "</" + jsx.type + ">";
-      return html;
     } else throw new Error("Cannot render an object.");
   } else throw new Error("Not implemented.");
 }

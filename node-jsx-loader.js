@@ -20,6 +20,7 @@ export async function load(url, context, defaultLoad) {
         format: "module",
       };
     }
+    // console.log(newResult.code)
     return { source: newResult.code, format: "module" };
   }
   return defaultLoad(url, context, defaultLoad);
