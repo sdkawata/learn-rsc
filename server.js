@@ -2,6 +2,7 @@ import { createServer } from "http";
 import escapeHtml from "escape-html";
 import {PageList} from "./components/PageList.js"
 import {Page} from "./components/Page.js"
+import { readFile } from "fs/promises";
 
 createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
@@ -12,6 +13,10 @@ createServer(async (req, res) => {
         res,
         <PageList />
       );
+    } else if (url.pathname === "/client.js") {
+      const content = await readFile("client.js", 'utf8')
+      res.setHeader("Content-Type", "text/javascript");
+      res.end(content);
     } else {
       const slug = url.pathname.slice(1)
       sendHTML(
