@@ -5,23 +5,24 @@ import {Page} from "./components/Page.js"
 
 createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
-  if (url.pathname === "/") {
-    sendHTML(
-      res,
-      <PageList />
-    );
-  } else {
-    try {
+  try {
+
+    if (url.pathname === "/") {
+      sendHTML(
+        res,
+        <PageList />
+      );
+    } else {
       const slug = url.pathname.slice(1)
       sendHTML(
         res,
         <Page slug={slug}/>
       )
-    } catch(e) {
-      console.log(e)
-      res.statusCode = 500
-      res.end("err")
     }
+  } catch (e) {
+    console.log(e)
+    res.statusCode = 500
+    res.end("err")
   }
 }).listen(8080);
 
