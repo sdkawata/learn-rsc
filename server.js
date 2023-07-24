@@ -39,11 +39,7 @@ async function renderJSXToHTML(jsx) {
   } else if (jsx == null || typeof jsx === "boolean") {
     return "";
   } else if (Array.isArray(jsx)) {
-    const renderedChildren = []
-    for (const child of jsx) {
-      renderedChildren.push(await renderJSXToHTML(child))
-    }
-    return renderedChildren.join("");
+    return (await Promise.all(jsx.map(child => renderJSXToHTML(child)))).join("")
   } else if (typeof jsx === "object") {
     if (jsx.$$typeof === Symbol.for("react.element")) {
       if (typeof jsx.type === "function") {

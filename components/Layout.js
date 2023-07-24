@@ -6,7 +6,12 @@ export const Layout = ({children}) => {
         <title>My blog</title>
       </head>
       <body>
+        <div>
+        search:<input></input>
+        </div>
         {children}
+        <hr/>
+        <div><a href="/">back to home</a></div>
         <footer>
           <hr />
           <p>
