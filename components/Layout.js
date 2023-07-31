@@ -4,7 +4,6 @@ export const Layout = ({children}) => {
     return (<html>
       <head>
         <title>My blog</title>
-        <script type="text/javascript" src="/client.js"></script>
       </head>
       <body>
         <div>

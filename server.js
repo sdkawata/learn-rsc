@@ -39,7 +39,18 @@ createServer(async (req, res) => {
 }).listen(8080);
 
 async function sendHTML(res, jsx) {
-  const html = await renderJSXToHTML(jsx);
+  let html = await renderJSXToHTML(jsx);
+  html += `
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@canary",
+        "react-dom/client": "https://esm.sh/react-dom@canary/client"
+      }
+    }
+  </script>
+  <script type="module" src="/client.js"></script>
+  `;
   res.setHeader("Content-Type", "text/html");
   res.end(html);
 }
@@ -47,7 +58,16 @@ async function sendHTML(res, jsx) {
 async function sendJSX(res, jsx) {
   const newJsx = await renderJSXToClientJSX(jsx);
   res.setHeader("Content-Type", "application/json");
-  res.end(JSON.stringify(newJsx,undefined, 2));
+  res.end(JSON.stringify(newJsx, stringifyJSX, 2));
+}
+
+function stringifyJSX(key, value) {
+  if (value === Symbol.for("react.element")) {
+    return "$RE";
+  } else if (typeof value === 'string' && value.startsWith("$")) {
+    return "$" + value;
+  }
+  return value;
 }
 
 async function renderJSXToClientJSX(jsx) {
@@ -74,7 +94,6 @@ async function renderJSXToClientJSX(jsx) {
 }
 
 async function renderJSXToHTML(jsx) {
-  // console.log(jsx);
   if (typeof jsx === "string" || typeof jsx === "number") {
     return escapeHtml(jsx);
   } else if (jsx == null || typeof jsx === "boolean") {
@@ -82,6 +101,7 @@ async function renderJSXToHTML(jsx) {
   } else if (Array.isArray(jsx)) {
     return (await Promise.all(jsx.map(child => renderJSXToHTML(child)))).join("")
   } else if (typeof jsx === "object") {
+    console.log(jsx);
     if (jsx.$$typeof === Symbol.for("react.element")) {
       if (typeof jsx.type === "function") {
         return await renderJSXToHTML(await jsx.type(jsx.props))
