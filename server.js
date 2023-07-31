@@ -19,6 +19,12 @@ createServer(async (req, res) => {
       const content = await readFile("client.js", 'utf8')
       res.setHeader("Content-Type", "text/javascript");
       res.end(content);
+    } else if (url.searchParams.has("jsx")) {
+      url.searchParams.delete("jsx")
+      await sendJSX(
+        res,
+        <Router url={url}/>
+      )
     } else {
       await sendHTML(
         res,
@@ -36,6 +42,35 @@ async function sendHTML(res, jsx) {
   const html = await renderJSXToHTML(jsx);
   res.setHeader("Content-Type", "text/html");
   res.end(html);
+}
+
+async function sendJSX(res, jsx) {
+  const newJsx = await renderJSXToClientJSX(jsx);
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify(newJsx,undefined, 2));
+}
+
+async function renderJSXToClientJSX(jsx) {
+  // console.log(jsx);
+  if (typeof jsx === "string" || typeof jsx === "number") {
+    return escapeHtml(jsx);
+  } else if (jsx == null || typeof jsx === "boolean") {
+    return "";
+  } else if (Array.isArray(jsx)) {
+    return (await Promise.all(jsx.map(child => renderJSXToClientJSX(child)))).join("")
+  } else if (typeof jsx === "object") {
+    if (jsx.$$typeof === Symbol.for("react.element")) {
+      if (typeof jsx.type === "function") {
+        return await renderJSXToClientJSX(await jsx.type(jsx.props))
+      } else {
+        const newJsx = {...jsx}
+        for (const propname in newJsx.props) {
+          newJsx[propname] = await renderJSXToClientJSX(newJsx[propname])
+        }
+        return newJsx
+      }
+    } else throw new Error("Cannot render an object.");
+  } else throw new Error("Not implemented.");
 }
 
 async function renderJSXToHTML(jsx) {
