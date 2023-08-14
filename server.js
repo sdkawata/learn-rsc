@@ -71,6 +71,8 @@ async function sendJSX(res, jsx) {
 function stringifyJSX(key, value) {
   if (value === Symbol.for("react.element")) {
     return "$RE";
+  } else if (value === Symbol.for("react.fragment")) {
+    return "$RF";
   } else if (typeof value === 'string' && value.startsWith("$")) {
     return "$" + value;
   }
@@ -78,7 +80,7 @@ function stringifyJSX(key, value) {
 }
 
 async function renderJSXToClientJSX(jsx) {
-  // console.log(jsx);
+  console.log(jsx);
   if (typeof jsx === "string" || typeof jsx === "number") {
     return escapeHtml(jsx);
   } else if (jsx == null || typeof jsx === "boolean") {
