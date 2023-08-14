@@ -10,7 +10,9 @@ function unstringifyJSX(key, value) {
     return value;
 }
 
-const initialJSX = () => {return JSON.parse(window.__INITIANL_CLIENT_JSX__STRING__, unstringifyJSX);}
+const initialJSX = () => {
+    return JSON.parse(window.__INITIANL_CLIENT_JSX__STRING__, unstringifyJSX);
+}
 
 const root = hydrateRoot(document, initialJSX())
 

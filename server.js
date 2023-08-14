@@ -42,6 +42,7 @@ async function sendHTML(res, jsx) {
   let html = await renderJSXToHTML(jsx);
   const clientJSX = await renderJSXToClientJSX(jsx)
   const clientJSXString = JSON.stringify(clientJSX, stringifyJSX)
+  console.log(html)
   html += `<script>window.__INITIANL_CLIENT_JSX__STRING__=`
   html += JSON.stringify(clientJSXString)
   html += `;</script>`
@@ -104,9 +105,21 @@ async function renderJSXToHTML(jsx) {
   } else if (jsx == null || typeof jsx === "boolean") {
     return "";
   } else if (Array.isArray(jsx)) {
-    return (await Promise.all(jsx.map(child => renderJSXToHTML(child)))).join("")
+    const childHtmls = (await Promise.all(jsx.map(child => renderJSXToHTML(child))))
+    let html = ""
+    let wasTextNode = false
+    let isTextNode = false
+    for (let i = 0; i < jsx.length; i++) {
+      isTextNode = typeof jsx[i] === "string" || typeof jsx[i] === "number"
+      if (isTextNode && wasTextNode) {
+        html += "<!-- -->"
+      }
+      html += childHtmls[i]
+      wasTextNode = isTextNode
+    }
+    return html
   } else if (typeof jsx === "object") {
-    console.log(jsx);
+    // console.log(jsx);
     if (jsx.$$typeof === Symbol.for("react.element")) {
       if (typeof jsx.type === "function") {
         return await renderJSXToHTML(await jsx.type(jsx.props))
