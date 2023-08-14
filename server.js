@@ -40,6 +40,11 @@ createServer(async (req, res) => {
 
 async function sendHTML(res, jsx) {
   let html = await renderJSXToHTML(jsx);
+  const clientJSX = await renderJSXToClientJSX(jsx)
+  const clientJSXString = JSON.stringify(clientJSX, stringifyJSX)
+  html += `<script>window.__INITIANL_CLIENT_JSX__STRING__=`
+  html += JSON.stringify(clientJSXString)
+  html += `;</script>`
   html += `
   <script type="importmap">
     {

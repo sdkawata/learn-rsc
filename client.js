@@ -1,27 +1,25 @@
 import {hydrateRoot} from 'react-dom/client';
 
 
-const initialJSX = () => {return null;}
-
-const root = hydrateRoot(document, initialJSX())
-
-
-const navigate = async (href) => {
-    console.log("navigate!!!", href)
-    const response = await fetch(href + "?jsx")
-    const jsx = JSON.parse(await response.text(), unStringifyJSX);
-    root.render(jsx)
-}
-
-function unStringifyJSX(key, value) {
+function unstringifyJSX(key, value) {
     if (value === "$RE") {
       return Symbol.for("react.element");
     } else if (typeof value === "string" && value.startsWith("$")) {
       return value.slice(1);
     }
     return value;
-  }
-  
+}
+
+const initialJSX = () => {return JSON.parse(window.__INITIANL_CLIENT_JSX__STRING__, unstringifyJSX);}
+
+const root = hydrateRoot(document, initialJSX())
+
+const navigate = async (href) => {
+    console.log("navigate!!!", href)
+    const response = await fetch(href + "?jsx")
+    const jsx = JSON.parse(await response.text(), unstringifyJSX);
+    root.render(jsx)
+}
 
 window.addEventListener('click', function (e) {
     if (e.target.tagName !== 'A') {
